@@ -136,36 +136,61 @@ role and Domino’s needs:
 ### Questions About Your Technical Proficiency
 1. **Can you walk me through a project where you used Python or R for statistical analysis?**
    - Follow-up: What libraries or frameworks did you use, and why?
+    - examples: electricity demand forecasting; palm olein price forecasting
 
 2. **How proficient are you in SQL? Can you give an example of a complex query you have written?**
+    - example: Clough 2nd creditors meeting
 
 3. **What data visualization tools have you used, and how do you decide which 
    one to use for a given task?**
+   - PowerBI, Tableau, Python libraries. 
+   - it depends on the client and use case. If its short term, i prefer PowerBI. If its long term I'd prefer to do it in 
+     Python and embed in a website. Its cheaper and more efficient
    - Follow-up: Can you show or describe a visualization you are particularly proud of?
+   - example: Clough Creditors 2nd meeting dashboard
 
 ### Questions About Your Fit and Understanding of the Role
 1. **Why are you interested in working at Domino’s, and what do you know about 
    our business model and market position?**
+   - Domino's sees data science, analytics and machine learning as a core component of developing future value. Its not 
+     an "add on", where one's work might be unused or under valued
+   - Domino's is innovative. when i come up with ideas i think I'll get the chance to test/prove them rather than being 
+     rejected out of hand
+   - I want to work as part of a team, and i want to work with people who are better than me, so I can learn and improve
+   - Based on what the recruiter has told me, there is a need for a person with good stakeholder management skills in 
+     Brisbane. Someone who can act as a bridge between the technical and non technical teams. I know that I can do a 
+     good job with that and I want to contribute
 
-2. **How do you prioritize and manage multiple projects, especially when dealing 
-   with cross-functional teams?**
+2. **How do you prioritize and manage multiple projects, especially when dealing with cross-functional teams?**
+   - clearly identify milestones to success for success in each project, and the sub-tasks
+   - clear understanding of individual responsibilities for each project
+   - prioritise activities & allocate resources
+   - regular project meetings to talk about progress vs plan, roadblocks, feedback, dynamic re-prioritisation
+   - Use project management tools
+   - Be quick to report bad news.
 
-3. **Can you describe a situation where you had to engage and influence senior 
-   stakeholders? How did you ensure their buy-in?**
+3. **Can you describe a situation where you had to engage and influence senior stakeholders? How did you ensure their buy-in?**
+    - example 1: KK Kingston cash flow & solvency problem required me to engage with bankers, shareholders and the management team. successful
+    - example 2: Project Nineveh at Deloitte. had to engage with Partners and Risk management team. Not successful
 
 ### Behavioral and Situational Questions
-1. **Tell me about a time when you faced a significant challenge in your work. 
-   How did you overcome it?**
+1. **Tell me about a time when you faced a significant challenge in your work. How did you overcome it?**
    
-2. **How do you keep up with the latest developments in data science and 
-   analytics? Can you give an example of how you’ve applied a new technique 
+2. **How do you keep up with the latest developments in data science and analytics? Can you give an example of how you’ve applied a new technique 
    or tool in your work?**
+   - active community engagement, 
+   - constant study and personal projects, 
+   - competing on Kaggle, 
+   - reading technical blogs and trying what they present for myself
 
 3. **Describe a time when you had to work with a difficult team member or stakeholder. How did you handle the situation?**
+   - first try to understand why that person is 'difficult', what's driving it.
+   - from that, decide what actions i can take to resolve or minimise the issue
+   - regular, open, honest, transparent communication.
+   - Be prepared to hear tough things, don't take it personally
 
 ### Questions for You to Ask
-1. **What are the current key projects or initiatives for the Advanced Analytics 
-   team at Domino’s?**
+1. **What are the current key projects or initiatives for the Advanced Analytics team at Domino’s?**
    
 2. **What does success look like for this role in the first 6/12/18 months?**
 
