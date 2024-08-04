@@ -5,6 +5,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+from scipy.stats import boxcox
 from sklearn.model_selection import train_test_split, cross_validate
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score, make_scorer
@@ -84,15 +85,7 @@ def log_function_call(f: Callable) -> Callable:
 
 
 class ProductAnalysis:
-    """
-    Class to analyse a product using linear regression
-    """
     def __init__(self, data: pd.DataFrame, product_name: str) -> None:
-        """
-        Initialize the class
-        :param data:
-        :param product_name:
-        """
         self.data = data[data['Product'] == product_name].copy()
         self.product_name = product_name
         self.model = None
@@ -101,50 +94,31 @@ class ProductAnalysis:
     @log_function_call
     @timing
     def preprocess_data(self) -> None:
-        """
-        Preprocess the data
-        :return:
-        """
-        # Add Cost of Goods Sold (COGS)
-        self.data['COGS'] = self.data['Menu_Price'] - (self.data['Menu_Price'] * (self.data['Profit_Percentage'] / 100))
-        # Log Normalization
-        self.data['Log_Menu_Price'] = np.log(self.data['Menu_Price'])
-        self.data['Log_Pizza_Count'] = np.log(self.data['Pizza_Count'])
-        # todo: more feature engineering
+        pass  # assuming data is preprocessed before being loaded
 
     @log_function_call
     @timing
     def plot_pair_plot(self) -> None:
-        """
-        Plot the pair plot for the product
-        :return:
-        """
         sns.pairplot(self.data)
         plt.show()
 
     @log_function_call
     @timing
     def plot_histograms(self) -> None:
-        """
-        Plot histograms for the product
-        :return:
-        """
         fig, axes = plt.subplots(2, 3)
         fig.suptitle(f'{self.product_name} Histograms')
 
-        sns.histplot(self.data['Log_Menu_Price'], kde=True, ax=axes[0, 0])
-        axes[0, 0].set_title('Log Menu Price')
+        sns.histplot(self.data['BoxCox_Menu_Price'], kde=True, ax=axes[0, 0])
+        axes[0, 0].set_title('BoxCox Menu Price')
 
-        sns.histplot(self.data['Log_Pizza_Count'], kde=True, ax=axes[0, 1])
-        axes[0, 1].set_title('Log Pizza Count')
+        sns.histplot(self.data['Pizza_Count'], kde=True, ax=axes[0, 1])
+        axes[0, 1].set_title('BoxCox Pizza Count')
 
         sns.histplot(self.data['Profit_Percentage'], kde=True, ax=axes[0, 2])
         axes[0, 2].set_title('Profit Percentage')
 
-        sns.histplot(self.data['COGS'], kde=True, ax=axes[1, 0])
-        axes[1, 0].set_title('COGS')
-
         # Hide unused subplots
+        axes[1, 0].set_visible(False)
         axes[1, 1].set_visible(False)
         axes[1, 2].set_visible(False)
 
@@ -155,41 +129,41 @@ class ProductAnalysis:
     @log_function_call
     @timing
     def calculate_correlation(self) -> None:
-        """
-        Calculate the correlation matrix for the product
-        :return:
-        """
         correlation = self.data.drop(columns=['Product']).corr()
-        logging.info(f"\nCorrelation matrix for {self.product_name}:\n{correlation}")
+        logging.info(
+            f"\nCorrelation matrix for {self.product_name}:\n{correlation}")
 
     @log_function_call
     @timing
     def calculate_price_elasticity(self) -> None:
-        """
-        Calculate price elasticity of demand
-        :return:
-        """
-        self.data = self.data.sort_values('Menu_Price')
-        self.data['Price_Change'] = self.data['Menu_Price'].pct_change()
-        self.data['Count_Change'] = self.data['Pizza_Count'].pct_change()
-        self.data['Elasticity'] = self.data['Count_Change'] / self.data['Price_Change']
+        self.data = self.data.sort_values('BoxCox_Menu_Price')
+        self.data['Price_Change'] = self.data['BoxCox_Menu_Price'].pct_change()
+        self.data['Count_Change'] = self.data[
+            'Pizza_Count'].pct_change()
+        self.data['Elasticity'] = self.data['Count_Change'] / self.data[
+            'Price_Change']
         # todo: print the price elasticity of demand function using pprint
 
     @log_function_call
     @timing
     def train_model(self) -> None:
-        """
-        Train a linear regression model on the data
-        :return:
-        """
-        self.data['Log_Price_Squared'] = self.data['Log_Menu_Price'] ** 2
+        self.data['BoxCox_Price_Squared'] = self.data['BoxCox_Menu_Price'] ** 2
 
-        X = self.data[['Log_Menu_Price', 'Log_Price_Squared', 'COGS']]
-        y = self.data['Log_Pizza_Count']
+        X = self.data[['BoxCox_Menu_Price', 'BoxCox_Price_Squared']]
+        y = self.data['Pizza_Count']
 
         # Split data into training, testing, and evaluation sets
-        X_train, X_temp, y_train, y_temp = train_test_split(X, y, test_size=0.4, random_state=42)
-        X_test, X_eval, y_test, y_eval = train_test_split(X_temp, y_temp, test_size=0.5, random_state=42)
+        X_train, X_temp, y_train, y_temp = train_test_split(
+            X, y,
+            test_size=0.4,
+            random_state=42
+        )
+        X_test, X_eval, y_test, y_eval = train_test_split(
+            X_temp,
+            y_temp,
+            test_size=0.5,
+            random_state=42
+        )
 
         # Initialize the model
         self.model = LinearRegression()
@@ -209,14 +183,28 @@ class ProductAnalysis:
         scoring = {
             'MAE': make_scorer(mean_absolute_error),
             'MSE': make_scorer(mean_squared_error),
-            'RMSE': make_scorer(lambda y_true, y_pred: mean_squared_error(y_true, y_pred, squared=False)),
+            'RMSE': make_scorer(
+                lambda y_true, y_pred: mean_squared_error(
+                    y_true,
+                    y_pred,
+                    squared=False
+                )
+            ),
             'R2': make_scorer(r2_score)
         }
-        cv_results = cross_validate(self.model, X_test, y_test, cv=5, scoring=scoring, return_train_score=False)
+        cv_results = cross_validate(
+            self.model,
+            X_test,
+            y_test,
+            cv=5,
+            scoring=scoring,
+            return_train_score=False
+        )
         logging.info(f'\nCross-Validation Results for {self.product_name}:')
         for metric in scoring.keys():
             scores = cv_results[f'test_{metric}']
-            logging.info(f'{metric} Scores: {scores}\nMean {metric}: {scores.mean()}')
+            logging.info(
+                f'{metric} Scores: {scores}\nMean {metric}: {scores.mean()}')
 
         # Evaluate the model on the evaluation set
         y_pred_eval = self.model.predict(X_eval)
@@ -224,58 +212,65 @@ class ProductAnalysis:
         mse_eval = mean_squared_error(y_eval, y_pred_eval)
         rmse_eval = mean_squared_error(y_eval, y_pred_eval, squared=False)
         r2_eval = r2_score(y_eval, y_pred_eval)
-        logging.info(f'\nEvaluation on Evaluation Set for {self.product_name}:\nMAE: {mae_eval}\nMSE: {mse_eval}\nRMSE: {rmse_eval}\nR-squared: {r2_eval}')
+        logging.info(
+            f'\nEvaluation on Evaluation Set for {self.product_name}:\nMAE: {mae_eval}\nMSE: {mse_eval}\nRMSE: {rmse_eval}\nR-squared: {r2_eval}')
 
     @log_function_call
     @timing
     def plot_optimal_price(self) -> None:
         """
-        Plot the optimal price point for the product
+        Plot the optimal price point for the product.
         :return:
         """
-        prices = np.linspace(self.data['Menu_Price'].min(), self.data['Menu_Price'].max(), 100)
-        log_prices = np.log(prices)
-        log_prices[np.isneginf(log_prices)] = 0  # Replace -inf with 0
+        prices = np.linspace(self.data['Menu_Price'].min(),
+                             self.data['Menu_Price'].max(), 100)
+        boxcox_prices = (
+                    prices ** 0.5)  # Assuming Box-Cox transformation (adjust this based on actual transformation used)
+        boxcox_prices_squared = boxcox_prices ** 2
 
         prices_df = pd.DataFrame({
             'Menu_Price': prices,
-            'Log_Menu_Price': log_prices,
-            'Log_Price_Squared': log_prices ** 2,
-            'COGS': prices - (prices * (self.data['Profit_Percentage'].mean() / 100))  # Assuming average profit percentage
+            'BoxCox_Menu_Price': boxcox_prices,
+            'BoxCox_Price_Squared': boxcox_prices_squared
         })
 
-        sales = self.model.predict(prices_df[['Log_Menu_Price', 'Log_Price_Squared', 'COGS']])
-        profit = sales * prices
+        sales = self.model.predict(
+            prices_df[['BoxCox_Menu_Price', 'BoxCox_Price_Squared']])
 
+        profit = (prices - self.data['cost_per_unit'].mean()) * sales
         optimal_index = np.argmax(profit)
         optimal_price = prices[optimal_index]
 
-        self.coefficients = np.polyfit(prices, profit, 2)
+        self.coefficients = np.polyfit(prices, sales, 2)
         poly_func = np.poly1d(self.coefficients)
         first_derivative_func = np.polyder(poly_func)
-        first_derivative_at_optimal_price = first_derivative_func(optimal_price) # fix_me
+        first_derivative_at_optimal_price = first_derivative_func(
+            optimal_price)
 
         fig, ax1 = plt.subplots()
 
-        ax1.plot(prices, profit, label='Profit')
-        ax1.axvline(x=optimal_price, color='red', linestyle='--', label=f'Optimal Price: {optimal_price:.2f}')
+        ax1.plot(prices, sales, label='Quantity Sold')
+        ax1.axvline(x=optimal_price, color='red', linestyle='--',
+                    label=f'Optimal Price: {optimal_price:.2f}')
         ax1.set_xlabel('Price')
-        ax1.set_ylabel('Profit')
+        ax1.set_ylabel('Quantity Sold')
         ax1.set_title(f'{self.product_name} Optimal Price Point')
 
         ax2 = ax1.twinx()
-        ax2.plot(prices, first_derivative_func(prices), label='First Derivative', color='green')
+        ax2.plot(prices, first_derivative_func(prices),
+                 label='First Derivative', color='green')
         ax2.axhline(y=0, color='gray', linestyle='--', label='Zero Slope')
         ax2.set_ylabel('First Derivative')
 
         fig.legend(loc='upper left')
-        plt.xlim(self.data['Menu_Price'].min(), self.data['Menu_Price'].max() * 1.5)  # Extend x-axis
+        plt.xlim(self.data['Menu_Price'].min(),
+                 self.data['Menu_Price'].max() * 1.5)  # Extend x-axis
         plt.show()
 
 
 if __name__ == '__main__':
     # Load Data
-    data = pd.read_csv('./../data/price_elasticity_data.csv')
+    data = pd.read_csv('./../data/transformed_price_elasticity_data.csv')
 
     # Wrap in tqdm to show progress bars
     with tqdm(total=2, desc="Processing Data") as pbar:
