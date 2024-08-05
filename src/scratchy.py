@@ -1,3 +1,6 @@
+"""
+
+"""
 import statsmodels.api as sm
 from statsmodels.tools.tools import add_constant
 import pandas as pd
